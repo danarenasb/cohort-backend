@@ -30,7 +30,7 @@ jobs:
         run: echo ${{ steps.version.outputs.version}}
 
       - name: Build Image
-        run: docker build -t gcr.io/wicked-wylee/wyleebackend:${{ steps.version.outputs.version}} .
+        run: docker buildx build --platform=linux/amd64 -t gcr.io/wicked-wylee/wyleebackend:${{ steps.version.outputs.version}} .
 
 
       - name: 'Authenticate to Google Cloud'
@@ -56,3 +56,6 @@ jobs:
           release_name: Release ${{ steps.version.outputs.version}}
           draft: false
           prerelease: false
+
+      - name: Deploy to Cloud Run
+        run: gcloud run deploy wyleebackend
