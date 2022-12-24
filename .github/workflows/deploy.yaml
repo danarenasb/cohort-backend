@@ -30,7 +30,7 @@ jobs:
         run: echo ${{ steps.version.outputs.version}}
 
       - name: Build Image
-        run: docker buildx build --platform=linux/amd64 -t gcr.io/wicked-wylee/wyleebackend:${{ steps.version.outputs.version}} .
+        run: docker buildx build --platform linux/amd64 -t gcr.io/wicked-wylee/wyleebackend:${{ steps.version.outputs.version}} .
 
 
       - name: 'Authenticate to Google Cloud'
