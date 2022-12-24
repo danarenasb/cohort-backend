@@ -12,7 +12,6 @@ jobs:
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
-          ref: ${{ github.head_ref }}
 
       - name: Create version
         uses: paulhatch/semantic-version@v4.0.3
@@ -29,10 +28,6 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
 
-      - name: Build Image
-        run: docker buildx build --platform linux/amd64 -t gcr.io/wicked-wylee/wyleebackend:${{ steps.version.outputs.version}} .
-
-
       - name: 'Authenticate to Google Cloud'
         uses: 'google-github-actions/auth@v1'
         with:
@@ -44,8 +39,8 @@ jobs:
       - name: Configure docker to gcloud
         run: gcloud auth configure-docker
 
-      - name: Push container to GCR
-        run: docker push gcr.io/wicked-wylee/wyleebackend:${{ steps.version.outputs.version}}
+      - name: Build Image
+        run: docker buildx build  --push --platform linux/amd64 -t gcr.io/wicked-wylee/wyleebackend:${{ steps.version.outputs.version}} .
 
       - name: Deploy to Cloud Run
         run: gcloud run deploy wyleebackend --image=gcr.io/wicked-wylee/wyleebackend:${{ steps.version.outputs.version}} --region=us-central1
