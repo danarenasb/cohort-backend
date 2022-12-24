@@ -5,8 +5,7 @@ COPY go.* *.go ./
 RUN go mod download
 RUN GOARCH=amd64 go build -o /cohort-backend
 
-# Now that we have the binary we don't need GO imagge so we use a clean version of scratch
-FROM scratch
+FROM gcr.io/distroless/base
 COPY --from=stage /cohort-backend /cohort-backend
 EXPOSE 8080
 CMD [ "/cohort-backend" ]
