@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/gorilla/mux"
@@ -22,6 +23,9 @@ func main() {
 	r.Use(mux.CORSMethodMiddleware(r))
 
 	muxWithMiddlewares := http.TimeoutHandler(r, time.Second*10, "Timeout!")
-
-	http.ListenAndServe(":8080", muxWithMiddlewares)
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+	}
+	http.ListenAndServe(":"+port, muxWithMiddlewares)
 }
