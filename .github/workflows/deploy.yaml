@@ -1,14 +1,30 @@
-name: Deploy to Cloud Run
+name: Pull Request Workflow
 
-on:
-  push:
-    branches:
-      - main
+on: 
+  pull_request:
+    branches: main
 
 jobs:
-  check-dist:
+  development-build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout Code
+        uses: actions/checkout@v3
         with:
           fetch-depth: 0
+          ref: ${{ github.head_ref }}
+
+      - name: Create version
+        uses: paulhatch/semantic-version@v4.0.3
+        id: version
+        with:
+          # The prefix to use to identify tags
+          tag_prefix: "v"
+          major_pattern: "(MAJOR)"
+          minor_pattern: "(MINOR)"
+          # A string to determine the format of the version output
+          format: "v${major}.${minor}.${patch}-prerelease${increment}"
+          bump_each_commit: false
+
+      - name: Print Version
+        run: echo ${{ steps.version.outputs.version}}
