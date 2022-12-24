@@ -58,4 +58,4 @@ jobs:
           prerelease: false
 
       - name: Deploy to Cloud Run
-        run: gcloud run deploy wyleebackend --image=gcr.io/wicked-wylee/wyleebackend:${{ steps.version.outputs.version}}
+        run: gcloud run deploy wyleebackend --image=gcr.io/wicked-wylee/wyleebackend:${{ steps.version.outputs.version}} --region=us-central1
