@@ -45,7 +45,7 @@ jobs:
         run: gcloud auth configure-docker
 
       - name: Push container to GCR
-        run: docker push -t gcr.io/wicked-wylee/wyleebackend:${{ steps.version.outputs.version}}
+        run: docker push gcr.io/wicked-wylee/wyleebackend:${{ steps.version.outputs.version}}
 
       - name: Create Release
         uses: actions/create-release@v1
