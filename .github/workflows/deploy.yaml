@@ -1,7 +1,7 @@
 name: Pull Request Workflow
 
 on: 
-  pull_request:
+  push:
     branches: main
 
 jobs:
@@ -28,3 +28,31 @@ jobs:
 
       - name: Print Version
         run: echo ${{ steps.version.outputs.version}}
+
+      - name: Build Image
+        run: docker build -t gcr.io/wicked-wylee/wyleebackend:${{ steps.version.outputs.version}} .
+
+
+      - name: 'Authenticate to Google Cloud'
+        uses: 'google-github-actions/auth@v1'
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY}}
+
+      - name: 'Set up Cloud SDK'
+        uses: 'google-github-actions/setup-gcloud@v1'
+
+      - name: Configure docker to gcloud
+        run: gcloud auth configure-docker
+
+      - name: Push container to GCR
+        run: docker push -t gcr.io/wicked-wylee/wyleebackend:${{ steps.version.outputs.version}}
+
+      - name: Create Release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
+        with:
+          tag_name: ${{ steps.version.outputs.version}}
+          release_name: Release ${{ steps.version.outputs.version}}
+          draft: false
+          prerelease: false
