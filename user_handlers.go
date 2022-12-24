@@ -5,7 +5,6 @@ import (
 	"errors"
 	"log"
 	"net/http"
-	"strings"
 
 	"github.com/gorilla/mux"
 	"gorm.io/gorm"
@@ -15,8 +14,8 @@ import (
 func createUser(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
-	var associate Associate
-	err := json.NewDecoder(r.Body).Decode(&associate)
+	var user Users
+	err := json.NewDecoder(r.Body).Decode(&user)
 	if err != nil {
 		log.Println(err)
 		w.WriteHeader(500)
@@ -28,7 +27,7 @@ func createUser(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(500)
 		return
 	}
-	result := db.Create(&associate)
+	result := db.Create(&user)
 	if result.Error != nil {
 		log.Println(err)
 		w.WriteHeader(500)
@@ -40,7 +39,7 @@ func createUser(w http.ResponseWriter, r *http.Request) {
 func getUser(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
-	var associate Associate
+	var user Users
 	vars := mux.Vars(r)
 	db, err := dbConnection()
 	if err != nil {
@@ -48,7 +47,8 @@ func getUser(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(500)
 		return
 	}
-	result := db.Where("ldap = ?", strings.ToLower(vars["ldap"])).First(&associate)
+	db.First(&user, 10)
+	result := db.First(&user, vars["id"])
 	if result.Error != nil {
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 			w.WriteHeader(404)
@@ -58,7 +58,7 @@ func getUser(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(500)
 		return
 	}
-	err = json.NewEncoder(w).Encode(associate)
+	err = json.NewEncoder(w).Encode(user)
 	if err != nil {
 		log.Println(err)
 		w.WriteHeader(500)
@@ -70,20 +70,20 @@ func getUser(w http.ResponseWriter, r *http.Request) {
 func getAllUsers(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
-	var associates []Associate
+	var users []Users
 	db, err := dbConnection()
 	if err != nil {
 		log.Println(err)
 		w.WriteHeader(500)
 		return
 	}
-	result := db.Raw("SELECT * FROM associates WHERE instructor = ?", false).Scan(&associates)
+	result := db.Raw("SELECT * FROM users WHERE admin = ?", false).Scan(&users)
 	if result.Error != nil {
 		log.Println(err)
 		w.WriteHeader(500)
 		return
 	}
-	err = json.NewEncoder(w).Encode(associates)
+	err = json.NewEncoder(w).Encode(users)
 	if err != nil {
 		log.Println(err)
 		w.WriteHeader(500)
@@ -94,7 +94,7 @@ func getAllUsers(w http.ResponseWriter, r *http.Request) {
 // Update
 func updateUser(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	var update Associate
+	var update Users
 	err := json.NewDecoder(r.Body).Decode(&update)
 	if err != nil {
 		log.Println(err)
@@ -108,7 +108,7 @@ func updateUser(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(500)
 		return
 	}
-	result := db.Model(&update).Where("LDAP = ?", vars["ldap"]).Updates(Associate{Name: update.Name, Email: update.Email, LDAP: update.LDAP})
+	result := db.Model(&update).Where("id = ?", vars["id"]).Updates(Users{Name: update.Name, Email: update.Email, ZipCode: update.ZipCode})
 	if result.Error != nil {
 		log.Println(err)
 		w.WriteHeader(500)
@@ -132,7 +132,7 @@ func deleteUser(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(500)
 		return
 	}
-	result := db.Delete(Associate{}, "ldap = ?", strings.ToLower(vars["ldap"]))
+	result := db.Delete(Users{}, "id = ?", vars["ldap"])
 	if result.Error != nil {
 		log.Println(err)
 		w.WriteHeader(500)

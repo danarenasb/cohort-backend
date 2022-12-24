@@ -1,29 +1,20 @@
 package main
 
-import "time"
+import (
+	"gorm.io/gorm"
+)
 
-type Associate struct {
-	Name          string    `json:"name"`
-	Email         string    `json:"email"`
-	LDAP          string    `json:"ldap"`
-	Instructor    bool      `json:"instructor"`
-	LastUpdatedBy string    `json:"last_updated_by"`
-	LastUpdated   time.Time `json:"last_updated"`
+type Users struct {
+	gorm.Model
+	Name    string  `json:"name"`
+	Email   string  `json:"email"`
+	ZipCode string  `json:"zip_code"`
+	Admin   bool    `json:"admin"`
+	Prizes  []Prize `gorm:"many2many:user_prizes;"`
 }
 
-type TechCheck struct {
-	ID            int       `json:"id"`
-	Name          string    `json:"name"`
-	LastUpdatedBy string    `json:"last_updated_by"`
-	LastUpdated   time.Time `json:"last_updated"`
-}
-
-type Score struct {
-	ID            int       `json:"id"`
-	StudentLDAP   string    `json:"ldap"`
-	TechCheckID   int       `json:"tech_check"`
-	Score         int       `json:"score"`
-	GradedBy      string    `json:"graded_by"`
-	LastUpdatedBy string    `json:"last_updated_by"`
-	LastUpdated   time.Time `json:"last_updated"`
+type Prize struct {
+	gorm.Model
+	Name     string `json:"name"`
+	Quantity int    `json:"quantity"`
 }

@@ -21,6 +21,6 @@ func dbConnection() (*gorm.DB, error) {
 	if err != nil {
 		return nil, err
 	}
-	db.AutoMigrate(&Associate{}, &TechCheck{}, &Score{})
+	db.AutoMigrate(&Users{}, &Prize{})
 	return db, nil
 }
