@@ -1,20 +1,30 @@
 package main
 
 import (
+	"time"
+
 	"gorm.io/gorm"
 )
 
-type Users struct {
+type User struct {
 	gorm.Model
-	Name    string  `json:"name"`
-	Email   string  `json:"email"`
-	ZipCode string  `json:"zip_code"`
-	Admin   bool    `json:"admin"`
-	Prizes  []Prize `gorm:"many2many:user_prizes;"`
+	Name           string         `json:"name"`
+	Email          string         `json:"email"`
+	Password       string         `json:"password"`
+	ZipCode        string         `json:"zip_code"`
+	Dob            string         `json:"dob"`
+	Admin          bool           `json:"admin"`
+	Interests      []Interest     `gorm:"many2many:user_interests";json:"interests"`
+	LogintAttempts []LoginAttempt `json:"login_attempts"`
 }
 
-type Prize struct {
+type LoginAttempt struct {
 	gorm.Model
-	Name     string `json:"name"`
-	Quantity int    `json:"quantity"`
+	Timestamp time.Time `json:"timestamp"`
+	UserID    uint      `json:"user_id"`
+}
+
+type Interest struct {
+	gorm.Model
+	Name string `json:"name"`
 }

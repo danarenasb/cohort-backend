@@ -10,36 +10,11 @@ import (
 	"gorm.io/gorm"
 )
 
-// Create
-func createUser(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	w.Header().Set("Access-Control-Allow-Origin", "*")
-	var user Users
-	err := json.NewDecoder(r.Body).Decode(&user)
-	if err != nil {
-		log.Println(err)
-		w.WriteHeader(500)
-		return
-	}
-	db, err := dbConnection()
-	if err != nil {
-		log.Println(err)
-		w.WriteHeader(500)
-		return
-	}
-	result := db.Create(&user)
-	if result.Error != nil {
-		log.Println(err)
-		w.WriteHeader(500)
-		return
-	}
-}
-
 // Read
 func getUser(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
-	var user Users
+	var user User
 	vars := mux.Vars(r)
 	db, err := dbConnection()
 	if err != nil {
@@ -47,7 +22,6 @@ func getUser(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(500)
 		return
 	}
-	db.First(&user, 10)
 	result := db.First(&user, vars["id"])
 	if result.Error != nil {
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
@@ -70,14 +44,14 @@ func getUser(w http.ResponseWriter, r *http.Request) {
 func getAllUsers(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
-	var users []Users
+	var users []User
 	db, err := dbConnection()
 	if err != nil {
 		log.Println(err)
 		w.WriteHeader(500)
 		return
 	}
-	result := db.Raw("SELECT * FROM users WHERE admin = ?", false).Scan(&users)
+	result := db.Find(&users).Scan(&users)
 	if result.Error != nil {
 		log.Println(err)
 		w.WriteHeader(500)
@@ -94,7 +68,7 @@ func getAllUsers(w http.ResponseWriter, r *http.Request) {
 // Update
 func updateUser(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	var update Users
+	var update User
 	err := json.NewDecoder(r.Body).Decode(&update)
 	if err != nil {
 		log.Println(err)
@@ -108,7 +82,7 @@ func updateUser(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(500)
 		return
 	}
-	result := db.Model(&update).Where("id = ?", vars["id"]).Updates(Users{Name: update.Name, Email: update.Email, ZipCode: update.ZipCode})
+	result := db.Model(&update).Where("id = ?", vars["id"]).Updates(User{Name: update.Name, Email: update.Email, ZipCode: update.ZipCode})
 	if result.Error != nil {
 		log.Println(err)
 		w.WriteHeader(500)
@@ -116,24 +90,6 @@ func updateUser(w http.ResponseWriter, r *http.Request) {
 	}
 	err = json.NewEncoder(w).Encode("Record updated")
 	if err != nil {
-		log.Println(err)
-		w.WriteHeader(500)
-		return
-	}
-}
-
-// Delete
-func deleteUser(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	vars := mux.Vars(r)
-	db, err := dbConnection()
-	if err != nil {
-		log.Println(err)
-		w.WriteHeader(500)
-		return
-	}
-	result := db.Delete(Users{}, "id = ?", vars["ldap"])
-	if result.Error != nil {
 		log.Println(err)
 		w.WriteHeader(500)
 		return
